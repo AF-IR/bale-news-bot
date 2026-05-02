@@ -2,24 +2,27 @@ name: Daily News Bot
 
 on:
   schedule:
-    # هر روز ساعت 8 صبح به وقت ایران (5:30 UTC)
+    # هر روز ساعت 5:30 UTC (9:00 صبح ایران)
     - cron: '30 5 * * *'
   
-  # اجرای دستی از تب Actions
+  # اجرای دستی
   workflow_dispatch:
 
 jobs:
   send-news:
     runs-on: ubuntu-latest
     
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
       
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       
       - name: Install dependencies
         run: |
@@ -28,16 +31,15 @@ jobs:
       - name: Run News Bot
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          ADMIN_ID: ${{ secrets.ADMIN_ID }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
           AD_LINK: ${{ secrets.AD_LINK }}
         run: |
           python bot.py
       
-      - name: Commit updated database
+      - name: Commit database
         run: |
-          git config --local user.email "github-actions@bot.com"
-          git config --local user.name "GitHub Actions"
-          git add sent_news.json bot_database.json
-          git diff --staged --quiet || git commit -m "Update news database - $(date +'%Y-%m-%d %H:%M')"
-          git push
+          git config --local user.email "bot@github.com"
+          git config --local user.name "GitHub Bot"
+          git add sent_news.json bot_database.json 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "Update - $(date +'%Y-%m-%d %H:%M')"
+          git push || echo "No changes to commit"
