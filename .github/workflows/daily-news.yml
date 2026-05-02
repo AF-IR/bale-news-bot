@@ -1,0 +1,43 @@
+name: Daily News Bot
+
+on:
+  schedule:
+    # هر روز ساعت 8 صبح به وقت ایران (5:30 UTC)
+    - cron: '30 5 * * *'
+  
+  # اجرای دستی از تب Actions
+  workflow_dispatch:
+
+jobs:
+  send-news:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Run News Bot
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          ADMIN_ID: ${{ secrets.ADMIN_ID }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          AD_LINK: ${{ secrets.AD_LINK }}
+        run: |
+          python bot.py
+      
+      - name: Commit updated database
+        run: |
+          git config --local user.email "github-actions@bot.com"
+          git config --local user.name "GitHub Actions"
+          git add sent_news.json bot_database.json
+          git diff --staged --quiet || git commit -m "Update news database - $(date +'%Y-%m-%d %H:%M')"
+          git push
