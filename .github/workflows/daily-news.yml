@@ -2,9 +2,7 @@ name: Daily News Bot
 
 on:
   schedule:
-    # هر روز ساعت 5:30 UTC (9:00 صبح ایران)
-    - cron: '30 5 * * *'
-  
+    # هر روز ساعت 5:30 UTC (9:00 صبح ایر
   # اجرای دستی
   workflow_dispatch:
 
